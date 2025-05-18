@@ -1,4 +1,5 @@
 package com.example.cuoiki.narvigation
+import android.R
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -11,6 +12,7 @@ import com.example.cuoiki.Trang.Ban.*
 import com.example.cuoiki.Trang.Doanhthu.*
 import com.example.cuoiki.Trang.Nhanvien.*
 import com.example.cuoiki.Trang.Sanpham.*
+import com.example.cuoiki.Trang.*
 
 
 
@@ -95,5 +97,7 @@ fun Dieuhuong() {
                 Suasp(navController, id)
             }
         }
+
+        composable("Menu") {menu(navController) }
     }
 }

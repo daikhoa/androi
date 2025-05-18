@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.Flow
 data class Donhang(
     @PrimaryKey(autoGenerate = true) val iddonhang: Int = 0,
     val tensp: String,
-    val giasp: Float,
+    val giasp: Double,
     val soluong: Int,
     val idban: Int
 )

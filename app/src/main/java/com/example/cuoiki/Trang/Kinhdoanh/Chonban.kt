@@ -19,7 +19,7 @@ import com.example.cuoiki.Viewmodel.Banviewmodel
 fun Chonban(navController: NavController) {
     val viewmodel :Banviewmodel = viewModel()
     val ban by viewmodel.ban.collectAsStateWithLifecycle(initialValue = emptyList())
-    var dsban = ban.toList()
+    var dsban = ban
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Danh sách bàn", fontSize = 24.sp, fontWeight = FontWeight.Bold)
