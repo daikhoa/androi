@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 data class HDTT(
     @PrimaryKey(autoGenerate = true) val idhoadon: Int = 0,
     val ngay: String,
-    val tongtien: Float
+    val tongtien: Double
 )
 
 

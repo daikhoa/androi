@@ -12,17 +12,27 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.cuoiki.Viewmodel.Donhangviewmodel
+import com.example.cuoiki.Viewmodel.*
+import com.example.cuoiki.Csdl.HDTT
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
 
 @Composable
 fun Donhang(navController: NavController, idban: Int) {
     val viewmodel: Donhangviewmodel = viewModel()
     val donhang by viewmodel.donhang.collectAsStateWithLifecycle(initialValue = emptyList())
+    val viewmodel1 : HDTTviewmodel = viewModel()
     val dsdonhang = donhang.filter { it.idban == idban }
+
+    // Tính tổng tiền
+    val tongTien = dsdonhang.sumOf { it.giasp * it.soluong}
+    val ngayHoadon = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")).toString()
 
     Scaffold(
         topBar = {
@@ -48,9 +58,49 @@ fun Donhang(navController: NavController, idban: Int) {
             Button(onClick = { navController.navigate("chonmon/$idban") }) {
                 Text("Thêm món")
             }
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Button(
+                    onClick = {
+                        viewmodel.thanhtoan(idban)
+                        viewmodel1.them(HDTT(ngay = ngayHoadon, tongtien = tongTien))
+                        navController.navigate("Chonban") {
+                            popUpTo(navController.graph.startDestinationId)
+                            launchSingleTop = true
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Thanh toán", color = MaterialTheme.colorScheme.onPrimary)
+                }
+            }
         }
     ) { padding ->
         LazyColumn(contentPadding = padding) {
+            // Hiển thị tổng tiền
+            item {
+                Card(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Text(
+                        text = "Tổng tiền: $tongTien VNĐ",
+                        style = MaterialTheme.typography.titleLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
+            }
             items(dsdonhang) { donhang ->
                 Card(
                     modifier = Modifier
