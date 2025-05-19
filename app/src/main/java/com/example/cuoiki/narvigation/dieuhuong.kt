@@ -5,7 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.cuoiki.Csdl.*
+
 import com.example.cuoiki.Trang.Kinhdoanh.*
 import com.example.cuoiki.Trang.Danhmuc.*
 import com.example.cuoiki.Trang.Ban.*
@@ -21,7 +21,10 @@ fun Dieuhuong() {
     val navController = rememberNavController()
 
 
-    NavHost(navController, startDestination = "Danhsachsp") {
+    NavHost(navController, startDestination = "chonban") {
+
+        composable("dangnhap") { dangnhap(navController)  }
+
         composable("chonban") { Chonban(navController) }
 
         composable("chonmon/{idban}"){ backStackEntry ->
