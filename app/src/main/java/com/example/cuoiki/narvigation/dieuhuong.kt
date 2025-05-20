@@ -21,7 +21,7 @@ fun Dieuhuong() {
     val navController = rememberNavController()
 
 
-    NavHost(navController, startDestination = "chonban") {
+    NavHost(navController, startDestination = "Danhsachban") {
 
         composable("dangnhap") { dangnhap(navController)  }
 
