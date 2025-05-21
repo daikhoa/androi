@@ -111,7 +111,7 @@ fun Doanhthu(navController: NavController) {
                 },
                 enabled = startDate.text.isNotEmpty() && endDate.text.isNotEmpty()
             ) {
-                Text(text = "Tính Doanh Thu")
+                Text(text = "Tính Doanh Thu")}
 
 
                 // Hiển thị kết quả doanh thu
@@ -121,7 +121,7 @@ fun Doanhthu(navController: NavController) {
                 )
             }
         }
-    }
+
 
 }
 
