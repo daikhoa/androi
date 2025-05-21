@@ -22,6 +22,9 @@ interface HDTTDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun thanhtoan(hdtt: HDTT)
+
+    @Query("SELECT SUM(tongtien) FROM hdtt WHERE ngay BETWEEN :startDate AND :endDate")
+    suspend fun doanhthu(startDate: String, endDate: String): Double?
 }
 
 
