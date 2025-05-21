@@ -2,6 +2,7 @@ package com.example.cuoiki.Trang.Sanpham
 
 import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -23,6 +24,7 @@ import com.example.cuoiki.Csdl.Sanpham
 import com.example.cuoiki.Viewmodel.Sanphamviewmodel
 import com.example.cuoiki.Viewmodel.Danhmucviewmodel
 import com.example.cuoiki.Csdl.Danhmuc
+import com.example.cuoiki.Viewmodel.dangnhapviewmodel
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
@@ -40,152 +42,174 @@ fun Themsp(navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val authViewModel: dangnhapviewmodel = viewModel()
+    val currentUser by authViewModel.currentUser.collectAsState()
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        hinhanh = uri
+    // Kiểm tra đăng nhập và quyền admin
+    LaunchedEffect(currentUser) {
+        if (currentUser == null) {
+            navController.navigate("dangnhap") {
+                popUpTo("themsp") { inclusive = true }
+            }
+        } else if (!authViewModel.isAdmin()) {
+            Toast.makeText(context, "Chỉ admin được thêm sản phẩm", Toast.LENGTH_SHORT).show()
+            navController.navigate("chonban") {
+                popUpTo("themsp") { inclusive = true }
+            }
+        }
     }
 
-    // Kiểm tra danh mục
-    LaunchedEffect(danhmuc) {
-        println("Danh mục: $danhmuc")
-    }
+    // Chỉ hiển thị nếu là admin
+    if (currentUser != null && authViewModel.isAdmin()) {
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(text = "Thêm Món Mới", style = MaterialTheme.typography.titleLarge)
-        OutlinedTextField(
-            value = tenmon,
-            onValueChange = { tenmon = it },
-            label = { Text("Tên món ăn") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = tenmon.isBlank() && errorMessage.isNotEmpty()
-        )
+        val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            hinhanh = uri
+        }
 
-        OutlinedTextField(
-            value = giasp,
-            onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) giasp = it },
-            label = { Text("Giá sản phẩm") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            isError = (giasp.isBlank() || giasp.toIntOrNull() == null) && errorMessage.isNotEmpty()
-        )
+        // Kiểm tra danh mục
+        LaunchedEffect(danhmuc) {
+            println("Danh mục: $danhmuc")
+        }
 
-        Box {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = true }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(text = "Thêm Món Mới", style = MaterialTheme.typography.titleLarge)
+            OutlinedTextField(
+                value = tenmon,
+                onValueChange = { tenmon = it },
+                label = { Text("Tên món ăn") },
+                modifier = Modifier.fillMaxWidth(),
+                isError = tenmon.isBlank() && errorMessage.isNotEmpty()
+            )
 
-            ) {
-                OutlinedTextField(
-                    value = selectedDanhMuc?.tendanhmuc ?: "Chọn danh mục",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Danh mục") },
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = selectedDanhMuc == null && errorMessage.isNotEmpty(),
+            OutlinedTextField(
+                value = giasp,
+                onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) giasp = it },
+                label = { Text("Giá sản phẩm") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                isError = (giasp.isBlank() || giasp.toIntOrNull() == null) && errorMessage.isNotEmpty()
+            )
 
+            Box {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = true }
+
+                ) {
+                    OutlinedTextField(
+                        value = selectedDanhMuc?.tendanhmuc ?: "Chọn danh mục",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Danh mục") },
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = selectedDanhMuc == null && errorMessage.isNotEmpty(),
+
+                        )
+                }
+
+
+                DropdownMenu(
+                    expanded = expanded && danhmuc.isNotEmpty(),
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 200.dp)
+                        .zIndex(1f)
+                ) {
+                    if (danhmuc.isEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text("Không có danh mục") },
+                            onClick = { expanded = false }
+                        )
+                    } else {
+                        danhmuc.forEach { danhMuc ->
+                            DropdownMenuItem(
+                                text = { Text(danhMuc.tendanhmuc) },
+                                onClick = {
+                                    selectedDanhMuc = danhMuc
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (hinhanh != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(hinhanh),
+                    contentDescription = "Hình ảnh sản phẩm",
+                    modifier = Modifier
+                        .size(150.dp)
+                        .clickable { launcher.launch("image/*") }
+                )
+            } else {
+                OutlinedButton(
+                    onClick = { launcher.launch("image/*") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Chọn hình ảnh")
+                }
+            }
+
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
 
-
-            DropdownMenu(
-                expanded = expanded && danhmuc.isNotEmpty(),
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 200.dp)
-                    .zIndex(1f)
-            ) {
-                if (danhmuc.isEmpty()) {
-                    DropdownMenuItem(
-                        text = { Text("Không có danh mục") },
-                        onClick = { expanded = false }
-                    )
-                } else {
-                    danhmuc.forEach { danhMuc ->
-                        DropdownMenuItem(
-                            text = { Text(danhMuc.tendanhmuc) },
-                            onClick = {
-                                selectedDanhMuc = danhMuc
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }
-        }
-
-        if (hinhanh != null) {
-            Image(
-                painter = rememberAsyncImagePainter(hinhanh),
-                contentDescription = "Hình ảnh sản phẩm",
-                modifier = Modifier
-                    .size(150.dp)
-                    .clickable { launcher.launch("image/*") }
-            )
-        } else {
-            OutlinedButton(
-                onClick = { launcher.launch("image/*") },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Chọn hình ảnh")
-            }
-        }
-
-        if (errorMessage.isNotEmpty()) {
-            Text(
-                text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        Button(
-            onClick = {
-                if (tenmon.isBlank()) {
-                    errorMessage = "Vui lòng nhập tên món ăn"
-                } else if (giasp.isBlank() || giasp.toIntOrNull() == null) {
-                    errorMessage = "Vui lòng nhập giá hợp lệ"
-                } else if (selectedDanhMuc == null) {
-                    errorMessage = "Vui lòng chọn danh mục"
-                } /*else if (hinhanh == null) {
+            Button(
+                onClick = {
+                    if (tenmon.isBlank()) {
+                        errorMessage = "Vui lòng nhập tên món ăn"
+                    } else if (giasp.isBlank() || giasp.toIntOrNull() == null) {
+                        errorMessage = "Vui lòng nhập giá hợp lệ"
+                    } else if (selectedDanhMuc == null) {
+                        errorMessage = "Vui lòng chọn danh mục"
+                    } /*else if (hinhanh == null) {
                     errorMessage = "Vui lòng chọn hình ảnh"
                 } */else {
-                    val imagePath = hinhanh?.let { saveImageToInternalStorage(context, it) }
-                    if (imagePath != null) {
-                        val sanpham = Sanpham(
-                            tensp = tenmon,
-                            giasp = giasp.toDouble(),
-                            iddanhmuc = selectedDanhMuc!!.iddanhmuc,
-                            hinhanh = imagePath
-                        )
-                        viewmodel.them(sanpham)
-                        navController.popBackStack()
-                    } else {
-                        errorMessage = "Lỗi khi lưu hình ảnh"
+                        val imagePath = hinhanh?.let { saveImageToInternalStorage(context, it) }
+                        if (imagePath != null) {
+                            val sanpham = Sanpham(
+                                tensp = tenmon,
+                                giasp = giasp.toDouble(),
+                                iddanhmuc = selectedDanhMuc!!.iddanhmuc,
+                                hinhanh = imagePath
+                            )
+                            viewmodel.them(sanpham)
+                            navController.popBackStack()
+                        } else {
+                            errorMessage = "Lỗi khi lưu hình ảnh"
+                        }
                     }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Lưu sản phẩm")
-        }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Lưu sản phẩm")
+            }
 
-        OutlinedButton(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Quay lại")
+            OutlinedButton(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Quay lại")
+            }
         }
     }
 }
+
+
 
 private fun saveImageToInternalStorage(context: Context, uri: Uri): String? {
     return try {

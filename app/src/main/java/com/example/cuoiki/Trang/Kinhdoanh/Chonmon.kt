@@ -2,6 +2,7 @@
 
 package com.example.cuoiki.Trang.Kinhdoanh
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -28,13 +29,26 @@ import com.example.cuoiki.R // Giả định resource cho placeholder
 import com.example.cuoiki.Viewmodel.Donhangviewmodel
 import com.example.cuoiki.Viewmodel.Sanphamviewmodel
 import com.example.cuoiki.Csdl.Donhang
+import com.example.cuoiki.Viewmodel.dangnhapviewmodel
+
 @Composable
 fun Chonmon(navController: NavController, idban : Int) {
 
     val sanphamViewmodel: Sanphamviewmodel = viewModel()
     val donhangViewmodel: Donhangviewmodel = viewModel()
     val sanphamList by sanphamViewmodel.sanpham.collectAsStateWithLifecycle(initialValue = emptyList())
+    val authViewModel: dangnhapviewmodel = viewModel()
+    val context = LocalContext.current
+    val currentUser by authViewModel.currentUser.collectAsState()
 
+    // Kiểm tra đăng nhập và quyền admin
+    LaunchedEffect(currentUser) {
+        if (currentUser == null) {
+            navController.navigate("dangnhap") {
+                popUpTo("chonmon") { inclusive = true }
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -130,6 +144,9 @@ fun Chonmon(navController: NavController, idban : Int) {
             }
         }
     }
-
-
 }
+
+
+
+
+

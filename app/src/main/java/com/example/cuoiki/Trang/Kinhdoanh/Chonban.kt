@@ -16,12 +16,26 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.cuoiki.Viewmodel.Banviewmodel
+import com.example.cuoiki.Viewmodel.dangnhapviewmodel
+
 
 @Composable
 fun Chonban(navController: NavController) {
     val viewmodel: Banviewmodel = viewModel()
     val ban by viewmodel.ban.collectAsStateWithLifecycle(initialValue = emptyList())
     val dsban = ban
+
+    val viewmodel1: dangnhapviewmodel  = viewModel()
+    val currentUser by viewmodel1.currentUser.collectAsState()
+
+    // Kiểm tra trạng thái đăng nhập
+    LaunchedEffect(currentUser) {
+        if (currentUser == null) {
+            navController.navigate("dangnhap") {
+                popUpTo("chonban") { inclusive = true }
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {

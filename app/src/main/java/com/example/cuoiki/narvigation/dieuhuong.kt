@@ -21,7 +21,7 @@ fun Dieuhuong() {
     val navController = rememberNavController()
 
 
-    NavHost(navController, startDestination = "Danhsachban") {
+    NavHost(navController, startDestination = "themnv") {
 
         composable("dangnhap") { dangnhap(navController)  }
 
@@ -44,26 +44,26 @@ fun Dieuhuong() {
 
         //______________________________________________________
 
-        composable("Danhsachban") { Danhsachban(navController) }
+        composable("danhsachban") { Danhsachban(navController) }
 
-        composable("Suaban/{id}"){ backStackEntry ->
+        composable("suaban/{id}"){ backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
             if (id != null) {
                 Suaban(navController, id)
             }
         }
 
-        composable("Themban"){
+        composable("themban"){
                 Themban(navController)
         }
 
         //______-______________________________
 
-        composable("Danhsachdm") { Danhsachdm(navController) }
+        composable("danhsachdm") { Danhsachdm(navController) }
 
-        composable("Themdm") { Themdm(navController) }
+        composable("themdm") { Themdm(navController) }
 
-        composable("Suadm/{id}"){ backStackEntry ->
+        composable("suadm/{id}"){ backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
             if (id != null) {
                 Suadm(navController, id)
@@ -72,29 +72,29 @@ fun Dieuhuong() {
 
         //_________________________________________
 
-        composable("Doanhthu") { Doanhthu(navController) }
+        composable("doanhthu") { Doanhthu(navController) }
 
         //________________________________________________________________
 
-        composable("Danhsachnv") {Danhsachnv(navController) }
+        composable("danhsachnv") {Danhsachnv(navController) }
 
-        composable("Suanv/{id}"){ backStackEntry ->
+        composable("suanv/{id}"){ backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
             if (id != null) {
                 Suanv(navController, id)
             }
         }
 
-        composable("Themnv") { Themnv(navController) }
+        composable("themnv") { Themnv(navController) }
 
 
         //_________________________________________________________________________________
 
-        composable("Danhsachsp") { Danhsachsp(navController) }
+        composable("danhsachsp") { Danhsachsp(navController) }
 
-        composable("Themsp") { Themsp(navController) }
+        composable("themsp") { Themsp(navController) }
 
-        composable("Suasp/{id}"){ backStackEntry ->
+        composable("suasp/{id}"){ backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
             if (id != null) {
                 Suasp(navController, id)

@@ -1,5 +1,6 @@
 package com.example.cuoiki.Trang.Sanpham
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import com.example.cuoiki.Csdl.Danhmuc
 import com.example.cuoiki.Csdl.Sanpham
 import com.example.cuoiki.Viewmodel.Danhmucviewmodel
 import com.example.cuoiki.Viewmodel.Sanphamviewmodel
+import com.example.cuoiki.Viewmodel.dangnhapviewmodel
 import java.io.File
 
 @Composable
@@ -30,142 +32,168 @@ fun Danhsachsp(navController: NavController) {
     val danhSachDanhMuc by danhmucViewModel.danhmuc.collectAsStateWithLifecycle(initialValue = emptyList())
     var selectedDanhMuc by remember { mutableStateOf<Danhmuc?>(null) }
     var expanded by remember { mutableStateOf(false) }
+    val authViewModel: dangnhapviewmodel = viewModel()
     val context = LocalContext.current
+    val currentUser by authViewModel.currentUser.collectAsState()
 
-    // Lọc danh sách sản phẩm dựa trên danh mục được chọn
-    val filteredSanPham = if (selectedDanhMuc == null) {
-        danhSachSanPham
-    } else {
-        danhSachSanPham.filter { it.iddanhmuc == selectedDanhMuc!!.iddanhmuc }
-    }
-
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate("Themsp") },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("Thêm", style = MaterialTheme.typography.titleLarge)
+    // Kiểm tra đăng nhập và quyền admin
+    LaunchedEffect(currentUser) {
+        if (currentUser == null) {
+            navController.navigate("dangnhap") {
+                popUpTo("danhsachsanpham") { inclusive = true }
             }
-        },
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Menu",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable { navController.navigate("Menu") }
-                )
+        } else if (!authViewModel.isAdmin()) {
+            Toast.makeText(context, "Chỉ admin được xem danh sách sản phẩm", Toast.LENGTH_SHORT).show()
+            navController.navigate("chonban") {
+                popUpTo("Danhsachsp") { inclusive = true }
             }
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Dropdown để chọn danh mục
-            Box {
-                OutlinedTextField(
-                    value = selectedDanhMuc?.tendanhmuc ?: "Tất cả danh mục",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Chọn danh mục") },
+    }
+
+    // Chỉ hiển thị nếu là admin
+    if (currentUser != null && authViewModel.isAdmin()) {
+
+        // Lọc danh sách sản phẩm dựa trên danh mục được chọn
+        val filteredSanPham = if (selectedDanhMuc == null) {
+            danhSachSanPham
+        } else {
+            danhSachSanPham.filter { it.iddanhmuc == selectedDanhMuc!!.iddanhmuc }
+        }
+
+        Scaffold(
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { navController.navigate("Themsp") },
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text("Thêm", style = MaterialTheme.typography.titleLarge)
+                }
+            },
+            bottomBar = {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { expanded = true }
-                )
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Thêm tùy chọn "Tất cả danh mục"
-                    DropdownMenuItem(
-                        text = { Text("Tất cả danh mục") },
-                        onClick = {
-                            selectedDanhMuc = null
-                            expanded = false
-                        }
+                    Text(
+                        text = "Menu",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable { navController.navigate("Menu") }
                     )
-                    // Các danh mục từ cơ sở dữ liệu
-                    danhSachDanhMuc.forEach { danhMuc ->
+                }
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Dropdown để chọn danh mục
+                Box {
+                    OutlinedTextField(
+                        value = selectedDanhMuc?.tendanhmuc ?: "Tất cả danh mục",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Chọn danh mục") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { expanded = true }
+                    )
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // Thêm tùy chọn "Tất cả danh mục"
                         DropdownMenuItem(
-                            text = { Text(danhMuc.tendanhmuc) },
+                            text = { Text("Tất cả danh mục") },
                             onClick = {
-                                selectedDanhMuc = danhMuc
+                                selectedDanhMuc = null
                                 expanded = false
                             }
                         )
+                        // Các danh mục từ cơ sở dữ liệu
+                        danhSachDanhMuc.forEach { danhMuc ->
+                            DropdownMenuItem(
+                                text = { Text(danhMuc.tendanhmuc) },
+                                onClick = {
+                                    selectedDanhMuc = danhMuc
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
-            }
 
-            // Danh sách sản phẩm
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(filteredSanPham) { sp ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                // Danh sách sản phẩm
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(filteredSanPham) { sp ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                         ) {
-                            Image(
-                                painter = rememberAsyncImagePainter(File(sp.hinhanh)),
-                                contentDescription = "Hình ảnh sản phẩm",
-                                modifier = Modifier
-                                    .size(80.dp)
-                                    .padding(4.dp)
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Column(
-                                modifier = Modifier.weight(1f)
+                            Row(
+                                modifier = Modifier.padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = sp.tensp, style = MaterialTheme.typography.titleMedium)
-                                Text(text = "Giá: ${sp.giasp}", style = MaterialTheme.typography.bodyMedium)
-                            }
+                                Image(
+                                    painter = rememberAsyncImagePainter(File(sp.hinhanh)),
+                                    contentDescription = "Hình ảnh sản phẩm",
+                                    modifier = Modifier
+                                        .size(80.dp)
+                                        .padding(4.dp)
+                                )
 
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Button(
-                                    onClick = {
-                                        navController.navigate("suasp/${sp.idsanpham}")
-                                    },
-                                    modifier = Modifier.padding(2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Column(
+                                    modifier = Modifier.weight(1f)
                                 ) {
-                                    Text("Sửa")
+                                    Text(
+                                        text = sp.tensp,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        text = "Giá: ${sp.giasp}",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
                                 }
 
-                                OutlinedButton(
-                                    onClick = {
-                                        sanphamViewModel.xoa(sp)
-                                    },
-                                    modifier = Modifier.padding(2.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = MaterialTheme.colorScheme.error
-                                    )
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    Text("Xóa")
+                                    Button(
+                                        onClick = {
+                                            navController.navigate("suasp/${sp.idsanpham}")
+                                        },
+                                        modifier = Modifier.padding(2.dp)
+                                    ) {
+                                        Text("Sửa")
+                                    }
+
+                                    OutlinedButton(
+                                        onClick = {
+                                            sanphamViewModel.xoa(sp)
+                                        },
+                                        modifier = Modifier.padding(2.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            contentColor = MaterialTheme.colorScheme.error
+                                        )
+                                    ) {
+                                        Text("Xóa")
+                                    }
                                 }
                             }
                         }
@@ -175,3 +203,4 @@ fun Danhsachsp(navController: NavController) {
         }
     }
 }
+

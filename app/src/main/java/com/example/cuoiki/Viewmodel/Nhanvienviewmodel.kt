@@ -4,9 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cuoiki.Csdl.Nhanvien
-import com.example.cuoiki.Csdl.Sanpham
 import com.example.cuoiki.database.DataBase
-
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 

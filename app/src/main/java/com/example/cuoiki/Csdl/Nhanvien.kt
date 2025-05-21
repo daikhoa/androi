@@ -30,4 +30,10 @@ interface NhanvienDao {
 
     @Delete
     suspend fun xoanhanvien(nhanvien: Nhanvien)
+
+    @Query("SELECT * FROM nhanvien WHERE taikhoan = :taikhoan AND mk = :matkhau")
+    suspend fun login(taikhoan: String, matkhau: String): Nhanvien?
+
+    @Query("SELECT * FROM nhanvien WHERE idnhanvien = :id")
+    suspend fun getNhanvienById(id: Int): Nhanvien?
 }
