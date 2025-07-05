@@ -25,22 +25,20 @@ fun Doanhthu(navController: NavController) {
     val context = LocalContext.current
     val currentUser by authViewModel.currentUser.collectAsState()
 
-    // Kiểm tra đăng nhập và quyền admin
     LaunchedEffect(currentUser) {
         if (currentUser == null) {
+            println("DoanhThu: currentUser is null, navigating to dangnhap")
             navController.navigate("dangnhap") {
-                popUpTo("Doanhthu") { inclusive = true }
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
             }
         } else if (!authViewModel.isAdmin()) {
+            println("DoanhThu: User is not admin, navigating to chonban")
             Toast.makeText(context, "Chỉ admin được xem doanh thu", Toast.LENGTH_SHORT).show()
             navController.navigate("chonban") {
-                popUpTo("Doanhthu") { inclusive = true }
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
             }
         }
     }
-
-    // Chỉ hiển thị nếu là admin
-    if (currentUser != null && authViewModel.isAdmin()) {
         // State để lưu ngày bắt đầu và kết thúc
         var startDate by remember { mutableStateOf(TextFieldValue("")) }
         var endDate by remember { mutableStateOf(TextFieldValue("")) }
@@ -132,7 +130,7 @@ fun Doanhthu(navController: NavController) {
                 )
             }
         }
-    }
+
 }
 
 fun isValidDate(date: String, formatter: SimpleDateFormat): Boolean {

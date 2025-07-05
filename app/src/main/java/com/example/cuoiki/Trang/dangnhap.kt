@@ -16,21 +16,21 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.cuoiki.Viewmodel.dangnhapviewmodel
-
+import kotlinx.coroutines.flow.distinctUntilChanged
 @Composable
 fun dangnhap(navController: NavController) {
     val viewModel: dangnhapviewmodel = viewModel()
-    val context = LocalContext.current
     var taikhoan by remember { mutableStateOf(TextFieldValue("")) }
     var matkhau by remember { mutableStateOf(TextFieldValue("")) }
-    var errorMessage by remember { mutableStateOf("") }
     val currentUser by viewModel.currentUser.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
-    // Điều hướng khi đăng nhập thành công
     LaunchedEffect(currentUser) {
+        println("dangnhap: CurrentUser changed: $currentUser")
         if (currentUser != null) {
+            println("dangnhap: Navigating to chonban")
             navController.navigate("chonban") {
-                popUpTo("dangnhap") { inclusive = true }
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
             }
         }
     }
@@ -76,7 +76,6 @@ fun dangnhap(navController: NavController) {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                 )
 
-                // Thông báo lỗi
                 if (errorMessage.isNotEmpty()) {
                     Text(
                         text = errorMessage,
@@ -87,16 +86,12 @@ fun dangnhap(navController: NavController) {
                     )
                 }
 
-                // Nút Đăng nhập
                 Button(
                     onClick = {
                         if (taikhoan.text.isBlank() || matkhau.text.isBlank()) {
-                            errorMessage = "Vui lòng nhập đầy đủ thông tin"
+
                         } else {
                             viewModel.login(taikhoan.text, matkhau.text)
-                            if (currentUser == null) {
-                                errorMessage = "Tài khoản hoặc mật khẩu không đúng"
-                            }
                         }
                     },
                     modifier = Modifier
